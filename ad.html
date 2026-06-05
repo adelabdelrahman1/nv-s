@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة الإدارة - مدارس نيو فيجن</title>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            direction: rtl;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .card h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            border-right: 4px solid #ff8c00;
+            padding-right: 15px;
+        }
+        .card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #2c3e50;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #ff8c00;
+        }
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #219a52;
+        }
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+        .btn-warning:hover {
+            background: #e67e22;
+        }
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        .btn-info {
+            background: #3498db;
+            color: white;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-box {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .stat-number {
+            font-size: 30px;
+            font-weight: bold;
+            color: #ff8c00;
+        }
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        .message {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            background: #27ae60;
+            color: white;
+            display: none;
+            z-index: 1000;
+        }
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            width: 90%;
+            max-width: 350px;
+            text-align: center;
+        }
+        .login-card input {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            text-align: center;
+        }
+        .login-card button {
+            width: 100%;
+            padding: 12px;
+            background: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+        .badge-green {
+            background: #27ae60;
+            color: white;
+        }
+        .badge-orange {
+            background: #f39c12;
+            color: white;
+        }
+        .badge-red {
+            background: #e74c3c;
+            color: white;
+        }
+        .info-box {
+            background: #e8f4fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 13px;
+            border-right: 4px solid #3498db;
+        }
+        .yellow-bg {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 2px solid #f59e0b;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .tab {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+        }
+        .tab.active {
+            background: #ff8c00;
+            color: #2c3e50;
+        }
+        
+        /* ===== عرض النتائج على شكل بطاقات ===== */
+        .filter-bar {
+            background: white;
+            padding: 20px;
+            border-radius: 25px;
+            margin-bottom: 25px;
+        }
+        .filter-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            align-items: flex-end;
+        }
+        .bulk-actions {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 25px;
+            margin-bottom: 25px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+        .student-card {
+            background: white;
+            border-radius: 25px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .student-card-header {
+            background: linear-gradient(135deg, #2c3e50, #1a2a3a);
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            cursor: pointer;
+        }
+        .student-card-header:hover {
+            background: linear-gradient(135deg, #ff8c00, #ffd700);
+        }
+        .student-info {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 15px;
+        }
+        .student-name {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .student-detail {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        .badge-hidden-count {
+            background: #e74c3c;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        .student-card-body {
+            display: none;
+            padding: 20px;
+            overflow-x: auto;
+        }
+        .student-card.expanded .student-card-body {
+            display: block;
+        }
+        .expand-icon {
+            font-size: 20px;
+            transition: transform 0.3s;
+        }
+        .student-card.expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+        .courses-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 500px;
+        }
+        .courses-table th, .courses-table td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .courses-table th {
+            background: #f7fafc;
+            font-weight: 600;
+        }
+        .checkbox-col {
+            width: 40px;
+            text-align: center;
+        }
+        .checkbox-col input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .badge-visible {
+            background: #27ae60;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        .badge-hidden {
+            background: #e74c3c;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        .badge-empty {
+            background: #f59e0b;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        .toggle-link {
+            background: #e0e7ff;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 0 3px;
+        }
+        .toggle-link:hover {
+            background: #c7d2fe;
+        }
+        
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .form-row { grid-template-columns: 1fr; }
+            .filter-form { grid-template-columns: 1fr; }
+            .export-buttons { justify-content: stretch; }
+            .export-buttons .btn { flex: 1; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+    <div id="message" class="message"></div>
+
+    <script>
+        // ==================== نظام المصادقة ====================
+        const Auth = {
+            defaultPassword: '1234',
+            storageKey: 'admin_auth',
+            
+            checkAuth() {
+                const authData = localStorage.getItem(this.storageKey);
+                if (authData) {
+                    try {
+                        const data = JSON.parse(authData);
+                        if (Date.now() < data.expires) return true;
+                    } catch(e) {}
+                }
+                return false;
+            },
+            
+            login(password) {
+                const savedPass = localStorage.getItem('admin_password') || this.defaultPassword;
+                if (password === savedPass) {
+                    localStorage.setItem(this.storageKey, JSON.stringify({
+                        expires: Date.now() + (8 * 60 * 60 * 1000)
+                    }));
+                    return true;
+                }
+                return false;
+            },
+            
+            logout() {
+                localStorage.removeItem(this.storageKey);
+                window.location.reload();
+            },
+            
+            showLogin() {
+                const overlay = document.createElement('div');
+                overlay.className = 'login-overlay';
+                overlay.innerHTML = `
+                    <div class="login-card">
+                        <h2>🔐 لوحة الإدارة</h2>
+                        <p>مدارس نيو فيجن الخاصة</p>
+                        <input type="password" id="loginPass" placeholder="كلمة المرور">
+                        <button onclick="handleLogin()">دخول</button>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+                
+                window.handleLogin = () => {
+                    const pass = document.getElementById('loginPass').value;
+                    if (Auth.login(pass)) {
+                        overlay.remove();
+                        location.reload();
+                    } else {
+                        alert('كلمة المرور غير صحيحة');
+                    }
+                };
+                
+                document.getElementById('loginPass').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') handleLogin();
+                });
+            }
+        };
+        
+        // ==================== التطبيق الرئيسي ====================
+        const App = {
+            students: [],
+            results: [],
+            currentTab: 'dashboard',
+            filters: { grade: '', semester: '', year: '', hideFilter: 'all', search: '' },
+            
+            gradeLevels: [
+                { id: 1, name: 'KG1' }, { id: 2, name: 'KG2' },
+                { id: 3, name: 'الصف الأول الابتدائي' }, { id: 4, name: 'الصف الثاني الابتدائي' },
+                { id: 5, name: 'الصف الثالث الابتدائي' }, { id: 6, name: 'الصف الرابع الابتدائي' },
+                { id: 7, name: 'الصف الخامس الابتدائي' }, { id: 8, name: 'الصف السادس الابتدائي' },
+                { id: 9, name: 'الصف الأول الإعدادي' }, { id: 10, name: 'الصف الثاني الإعدادي' },
+                { id: 11, name: 'الصف الثالث الإعدادي' }, { id: 12, name: 'الصف الأول الثانوي' },
+                { id: 13, name: 'الصف الثاني الثانوي' }, { id: 14, name: 'الصف الثالث الثانوي' }
+            ],
+            
+            init() {
+                if (!Auth.checkAuth()) {
+                    Auth.showLogin();
+                    return;
+                }
+                this.loadData();
+                this.render();
+            },
+            
+            loadData() {
+                const students = localStorage.getItem('neovision_students');
+                const results = localStorage.getItem('neovision_results');
+                
+                if (students) this.students = JSON.parse(students);
+                if (results) this.results = JSON.parse(results);
+                
+                console.log('✅ تم التحميل:', this.students.length, 'طالب,', this.results.length, 'نتيجة');
+            },
+            
+            saveData() {
+                localStorage.setItem('neovision_students', JSON.stringify(this.students));
+                localStorage.setItem('neovision_results', JSON.stringify(this.results));
+                this.showMessage('💾 تم الحفظ');
+            },
+            
+            showMessage(msg, isError = false) {
+                const msgDiv = document.getElementById('message');
+                msgDiv.textContent = msg;
+                msgDiv.style.background = isError ? '#e74c3c' : '#27ae60';
+                msgDiv.style.display = 'block';
+                setTimeout(() => {
+                    msgDiv.style.display = 'none';
+                }, 3000);
+            },
+            
+            // ==================== رفع الملفات ====================
+            uploadExcel(file, gradeId, semester, year) {
+                if (!file) {
+                    this.showMessage('❌ اختر ملف أولاً', true);
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+                        
+                        if (!rows || rows.length < 2) {
+                            this.showMessage('الملف فارغ', true);
+                            return;
+                        }
+                        
+                        const headers = rows[0];
+                        let nationalCol = -1, nameCol = -1;
+                        
+                        for (let i = 0; i < headers.length; i++) {
+                            const col = String(headers[i] || '');
+                            if (col.includes('الرقم القومي') || col.includes('رقم قومي')) nationalCol = i;
+                            if (col.includes('اسم الطالب') || col.includes('اسم')) nameCol = i;
+                        }
+                        
+                        if (nationalCol === -1 || nameCol === -1) {
+                            this.showMessage('⚠️ يجب وجود عمود "الرقم القومي" و "اسم الطالب"', true);
+                            return;
+                        }
+                        
+                        const subjects = [];
+                        for (let i = 0; i < headers.length; i++) {
+                            if (i !== nationalCol && i !== nameCol) {
+                                const subjectName = String(headers[i] || '').trim();
+                                if (subjectName) subjects.push({ index: i, name: subjectName });
+                            }
+                        }
+                        
+                        let newCount = 0;
+                        let resultsCount = 0;
+                        
+                        for (let i = 1; i < rows.length; i++) {
+                            const row = rows[i];
+                            if (!row) continue;
+                            
+                            const nationalId = String(row[nationalCol] || '').trim();
+                            const studentName = String(row[nameCol] || '').trim();
+                            
+                            if (!nationalId || !studentName) continue;
+                            if (nationalId.length !== 14 || isNaN(nationalId)) continue;
+                            
+                            let student = this.students.find(s => s.nationalId === nationalId);
+                            if (!student) {
+                                student = {
+                                    id: Date.now() + Math.random(),
+                                    nationalId: nationalId,
+                                    name: studentName,
+                                    grade_level_id: parseInt(gradeId),
+                                    academic_year: year,
+                                    seatNumber: ''
+                                };
+                                this.students.push(student);
+                                newCount++;
+                            }
+                            
+                            subjects.forEach((subject, idx) => {
+                                let grade = String(row[subject.index] || '').trim();
+                                if (!grade) grade = '—';
+                                
+                                this.results.push({
+                                    id: Date.now() + Math.random() + idx + i,
+                                    student_id: student.id,
+                                    grade_level_id: parseInt(gradeId),
+                                    subject_name: subject.name,
+                                    subject_grade: grade,
+                                    semester: semester,
+                                    academic_year: year,
+                                    is_hidden: false,
+                                    is_empty: (grade === '—'),
+                                    is_added_to_total: true,
+                                    display_order: idx
+                                });
+                                resultsCount++;
+                            });
+                        }
+                        
+                        this.saveData();
+                        this.showMessage(`✅ تم رفع ${resultsCount} مادة لـ ${newCount} طالب`);
+                        this.render();
+                        
+                    } catch(err) {
+                        this.showMessage('خطأ: ' + err.message, true);
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            },
+            
+            // ==================== الميزة الجديدة: إدارة المواد المضافة ====================
+            
+            exportSubjectsList() {
+                const gradeId = document.getElementById('subjectsGrade').value;
+                const semester = document.getElementById('subjectsSemester').value;
+                const year = document.getElementById('subjectsYear').value;
+                
+                if (!gradeId) {
+                    this.showMessage('❌ اختر المرحلة', true);
+                    return;
+                }
+                
+                const filtered = this.results.filter(r => 
+                    r.grade_level_id == gradeId && 
+                    r.semester === semester && 
+                    r.academic_year === year
+                );
+                
+                if (filtered.length === 0) {
+                    this.showMessage('❌ لا توجد مواد للمرحلة المحددة', true);
+                    return;
+                }
+                
+                const unique = new Map();
+                filtered.forEach(r => {
+                    if (!unique.has(r.subject_name)) {
+                        unique.set(r.subject_name, r.is_added_to_total);
+                    }
+                });
+                
+                const data = [];
+                for (let [name, added] of unique) {
+                    data.push({
+                        'المادة': name,
+                        'مضافة للمجموع': added ? 'نعم' : 'لا'
+                    });
+                }
+                
+                const ws = XLSX.utils.json_to_sheet(data);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'المواد');
+                
+                const gradeName = this.gradeLevels.find(g => g.id == gradeId)?.name || gradeId;
+                XLSX.writeFile(wb, `مواد_${gradeName}.xlsx`);
+                
+                this.showMessage(`✅ تم تصدير ${data.length} مادة`);
+            },
+            
+            uploadSubjectsUpdate(file) {
+                if (!file) {
+                    this.showMessage('❌ اختر ملف أولاً', true);
+                    return;
+                }
+                
+                const gradeId = document.getElementById('updateGrade').value;
+                const semester = document.getElementById('updateSemester').value;
+                const year = document.getElementById('updateYear').value;
+                
+                if (!gradeId) {
+                    this.showMessage('❌ اختر المرحلة', true);
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const rows = XLSX.utils.sheet_to_json(sheet);
+                        
+                        if (!rows || rows.length === 0) {
+                            this.showMessage('الملف فارغ', true);
+                            return;
+                        }
+                        
+                        const updateMap = new Map();
+                        rows.forEach(row => {
+                            const subjectName = row['المادة'] || Object.keys(row)[0];
+                            let isAdded = row['مضافة للمجموع'] || row['مضافة'] || Object.values(row)[1];
+                            
+                            if (subjectName && isAdded !== undefined) {
+                                const isAddedBool = (isAdded === 'نعم' || isAdded === 'yes' || isAdded === true);
+                                updateMap.set(String(subjectName).trim(), isAddedBool);
+                            }
+                        });
+                        
+                        if (updateMap.size === 0) {
+                            this.showMessage('لم يتم العثور على بيانات صالحة', true);
+                            return;
+                        }
+                        
+                        let updated = 0;
+                        this.results.forEach(result => {
+                            if (result.grade_level_id == gradeId && 
+                                result.semester === semester && 
+                                result.academic_year === year) {
+                                
+                                const newValue = updateMap.get(result.subject_name);
+                                if (newValue !== undefined && result.is_added_to_total !== newValue) {
+                                    result.is_added_to_total = newValue;
+                                    updated++;
+                                }
+                            }
+                        });
+                        
+                        this.saveData();
+                        this.showMessage(`✅ تم تحديث ${updated} نتيجة`);
+                        this.render();
+                        
+                    } catch(err) {
+                        this.showMessage('خطأ: ' + err.message, true);
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            },
+            
+            // ==================== تصدير JSON ====================
+            exportToJSON() {
+                const visibleResults = this.results.filter(r => !r.is_hidden);
+                const exportData = {
+                    students: this.students,
+                    results: visibleResults,
+                    exportDate: new Date().toISOString()
+                };
+                
+                const jsonStr = JSON.stringify(exportData, null, 2);
+                const blob = new Blob([jsonStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'data.json';
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                this.showMessage(`✅ تم تحميل data.json - ${this.students.length} طالب، ${visibleResults.length} نتيجة`);
+            },
+            
+            // ==================== إدارة النتائج ====================
+            toggleResult(resultId) {
+                const result = this.results.find(r => r.id == resultId);
+                if (result) {
+                    result.is_hidden = !result.is_hidden;
+                    this.saveData();
+                    this.showMessage(`تم ${result.is_hidden ? 'إخفاء' : 'إظهار'} النتيجة`);
+                    this.render();
+                }
+            },
+            
+            deleteResult(resultId) {
+                if (confirm('هل أنت متأكد من حذف هذه النتيجة؟')) {
+                    this.results = this.results.filter(r => r.id != resultId);
+                    this.saveData();
+                    this.showMessage('تم حذف النتيجة');
+                    this.render();
+                }
+            },
+            
+            bulkActions(action) {
+                const checkboxes = document.querySelectorAll('.result-checkbox:checked');
+                const ids = Array.from(checkboxes).map(cb => parseInt(cb.dataset.resultId));
+                if (ids.length === 0) {
+                    this.showMessage('الرجاء تحديد النتائج أولاً', true);
+                    return;
+                }
+                this.results.forEach(r => {
+                    if (ids.includes(r.id)) r.is_hidden = (action === 'hide');
+                });
+                this.saveData();
+                this.showMessage(`تم ${action === 'hide' ? 'إخفاء' : 'إظهار'} ${ids.length} نتيجة`);
+                this.render();
+            },
+            
+            getFilteredResults() {
+                let filtered = [...this.results];
+                if (this.filters.grade && this.filters.grade !== '') {
+                    filtered = filtered.filter(r => r.grade_level_id == this.filters.grade);
+                }
+                if (this.filters.semester && this.filters.semester !== '') {
+                    filtered = filtered.filter(r => r.semester === this.filters.semester);
+                }
+                if (this.filters.year && this.filters.year !== '') {
+                    filtered = filtered.filter(r => r.academic_year === this.filters.year);
+                }
+                if (this.filters.hideFilter === 'visible') {
+                    filtered = filtered.filter(r => !r.is_hidden);
+                }
+                if (this.filters.hideFilter === 'hidden') {
+                    filtered = filtered.filter(r => r.is_hidden);
+                }
+                return filtered;
+            },
+            
+            getStudentsWithResults() {
+                let filteredResults = this.getFilteredResults();
+                
+                if (this.filters.search && this.filters.search !== '') {
+                    const studentIds = this.students.filter(s => s.name.includes(this.filters.search)).map(s => s.id);
+                    filteredResults = filteredResults.filter(r => studentIds.includes(r.student_id));
+                }
+                
+                const map = new Map();
+                filteredResults.forEach(r => {
+                    const student = this.students.find(s => s.id === r.student_id);
+                    if (student) {
+                        if (!map.has(student.id)) {
+                            map.set(student.id, { ...student, results: [] });
+                        }
+                        map.get(student.id).results.push(r);
+                    }
+                });
+                
+                for (let student of map.values()) {
+                    student.results.sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+                }
+                
+                return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+            },
+            
+            getStats() {
+                return {
+                    students: this.students.length,
+                    results: this.results.length,
+                    hidden: this.results.filter(r => r.is_hidden).length
+                };
+            },
+            
+            exportToExcel() {
+                const studentsData = this.getStudentsWithResults();
+                if (studentsData.length === 0) {
+                    this.showMessage('لا توجد بيانات للتصدير', true);
+                    return;
+                }
+                
+                const exportData = [];
+                studentsData.forEach(student => {
+                    student.results.forEach(result => {
+                        exportData.push({
+                            'اسم الطالب': student.name,
+                            'الرقم القومي': student.nationalId,
+                            'رقم الجلوس': student.seatNumber || '',
+                            'المرحلة': this.gradeLevels.find(g => g.id == student.grade_level_id)?.name || '',
+                            'السنة الدراسية': result.academic_year,
+                            'الفصل الدراسي': result.semester === 'first' ? 'الأول' : 'الثاني',
+                            'المادة': result.subject_name,
+                            'الدرجة': result.is_empty ? '—' : result.subject_grade,
+                            'الحالة': result.is_hidden ? 'محجوبة' : (result.is_empty ? 'فارغة' : 'ظاهرة'),
+                            'مضافة للمجموع': result.is_added_to_total ? 'نعم' : 'لا'
+                        });
+                    });
+                });
+                
+                const ws = XLSX.utils.json_to_sheet(exportData);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'النتائج');
+                XLSX.writeFile(wb, `نتائج_نيو_فيجن_${new Date().toISOString().slice(0,19)}.xlsx`);
+                this.showMessage(`✅ تم تصدير ${exportData.length} سجل`);
+            },
+            
+            printAllResults() {
+                const studentsData = this.getStudentsWithResults();
+                if (studentsData.length === 0) {
+                    this.showMessage('لا توجد نتائج للطباعة', true);
+                    return;
+                }
+                
+                const gradeName = this.filters.grade ? (this.gradeLevels.find(g => g.id == this.filters.grade)?.name || this.filters.grade) : 'الكل';
+                const semesterName = this.filters.semester === 'first' ? 'الأول' : (this.filters.semester === 'second' ? 'الثاني' : (this.filters.semester || 'الكل'));
+                
+                let printWindow = window.open('', '_blank');
+                printWindow.document.write(`
+                    <html dir="rtl">
+                    <head>
+                        <title>طباعة النتائج</title>
+                        <style>
+                            body{font-family:Arial;margin:20px}
+                            .student-block{margin-bottom:30px;border:1px solid #ddd;border-radius:10px}
+                            .student-header{background:#2c3e50;color:white;padding:10px}
+                            table{width:100%;border-collapse:collapse}
+                            th,td{padding:8px;border:1px solid #ddd;text-align:center}
+                            .added-row{background:#e6fffa}
+                            @media print{.page-break{page-break-before:always}}
+                        </style>
+                    </head>
+                    <body>
+                    <div style="text-align:center">
+                        <h2>مدارس نيو فيجن الخاصة</h2>
+                        <p>كشف النتائج - المرحلة: ${gradeName} - الفصل: ${semesterName}</p>
+                    </div>
+                `);
+                
+                studentsData.forEach((student, index) => {
+                    printWindow.document.write(`
+                        <div class="student-block">
+                            <div class="student-header">
+                                <strong>${this.escapeHtml(student.name)}</strong> - 🆔 ${student.nationalId} - 📚 ${this.gradeLevels.find(g => g.id == student.grade_level_id)?.name || ''}
+                            </div>
+                            <table>
+                                <thead><tr><th>المادة</th><th>الدرجة</th><th>النوع</th></tr></thead>
+                                <tbody>
+                                    ${student.results.filter(r => !r.is_hidden).map(r => `
+                                        <tr class="${r.is_added_to_total ? 'added-row' : ''}">
+                                            <td>${this.escapeHtml(r.subject_name)}</td>
+                                            <td>${this.escapeHtml(r.subject_grade)}</td>
+                                            <td>${r.is_added_to_total ? 'مضافة للمجموع' : 'غير مضافة'}</td>
+                                        </table>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        ${index < studentsData.length - 1 ? '<div class="page-break"></div>' : ''}
+                    `);
+                });
+                
+                printWindow.document.write('</body></html>');
+                printWindow.document.close();
+                printWindow.print();
+            },
+            
+            renderDashboard() {
+                const stats = this.getStats();
+                const gradeOptions = this.gradeLevels.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+                
+                return `
+                    <div class="stats">
+                        <div class="stat-box"><div class="stat-number">${stats.students}</div><div class="stat-label">👨‍🎓 الطلاب</div></div>
+                        <div class="stat-box"><div class="stat-number">${stats.results}</div><div class="stat-label">📊 النتائج</div></div>
+                        <div class="stat-box"><div class="stat-number" style="color:#e74c3c;">${stats.hidden}</div><div class="stat-label">🔒 مخفية</div></div>
+                    </div>
+                    
+                    <div class="card">
+                        <h2>📤 رفع ملف نتائج جديد</h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>المرحلة</label>
+                                <select id="gradeLevel">${gradeOptions}</select>
+                            </div>
+                            <div class="form-group">
+                                <label>الفصل</label>
+                                <select id="semester"><option value="first">الأول</option><option value="second">الثاني</option></select>
+                            </div>
+                            <div class="form-group">
+                                <label>السنة</label>
+                                <select id="academicYear"><option value="2026">2026</option><option value="2025">2025</option></select>
+                            </div>
+                            <div class="form-group">
+                                <label>ملف Excel</label>
+                                <input type="file" id="excelFile" accept=".xlsx,.xls">
+                            </div>
+                        </div>
+                        <button id="uploadBtn" class="btn btn-primary">🚀 رفع</button>
+                    </div>
+                    
+                    <div class="card yellow-bg">
+                        <h2>⚙️ إدارة المواد المضافة للمجموع (تحديد جماعي للطلاب دفعة واحدة)</h2>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>المرحلة</label>
+                                <select id="subjectsGrade">${gradeOptions}</select>
+                            </div>
+                            <div class="form-group">
+                                <label>الفصل</label>
+                                <select id="subjectsSemester"><option value="first">الأول</option><option value="second">الثاني</option></select>
+                            </div>
+                            <div class="form-group">
+                                <label>السنة</label>
+                                <select id="subjectsYear"><option value="2026">2026</option><option value="2025">2025</option></select>
+                            </div>
+                        </div>
+                        
+                        <button id="exportSubjectsBtn" class="btn btn-info">📎 تصدير قائمة المواد (Excel)</button>
+                        
+                        <div class="info-box">
+                            <strong>📌 طريقة الاستخدام:</strong><br>
+                            1. اضغط على "تصدير قائمة المواد" للحصول على ملف Excel يحتوي على جميع المواد في المرحلة المحددة.<br>
+                            2. في ملف Excel، قم بتعديل عمود "مضافة للمجموع" إلى (نعم/لا) لكل مادة حسب رغبتك.<br>
+                            3. احفظ الملف ثم استخدم القسم أدناه "رفع ملف التحديث" لتطبيق التغييرات على جميع طلاب المرحلة دفعة واحدة.
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>📂 رفع ملف التحديث (Excel)</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>المرحلة</label>
+                                <select id="updateGrade">${gradeOptions}</select>
+                            </div>
+                            <div class="form-group">
+                                <label>الفصل</label>
+                                <select id="updateSemester"><option value="first">الأول</option><option value="second">الثاني</option></select>
+                            </div>
+                            <div class="form-group">
+                                <label>السنة</label>
+                                <select id="updateYear"><option value="2026">2026</option><option value="2025">2025</option></select>
+                            </div>
+                            <div class="form-group">
+                                <label>ملف Excel (بعد التعديل)</label>
+                                <input type="file" id="updateFile" accept=".xlsx,.xls">
+                            </div>
+                        </div>
+                        <button id="uploadUpdateBtn" class="btn btn-warning">🔄 رفع ملف التحديث وتطبيق التغييرات</button>
+                    </div>
+                    
+                    <div class="card">
+                        <h2>📥 تصدير البيانات للطلاب</h2>
+                        <button id="exportJsonBtn" class="btn btn-success" style="background:#8e44ad;">📥 تحميل data.json</button>
+                        <div class="info-box" style="margin-top:15px;">
+                            ⚠️ بعد التحميل، قم برفع ملف data.json إلى نفس مجلد student.html على GitHub
+                        </div>
+                    </div>
+                `;
+            },
+            
+            renderResults() {
+                const studentsData = this.getStudentsWithResults();
+                const filtered = this.getFilteredResults();
+                const availableYears = [...new Set(this.results.map(r => r.academic_year))];
+                
+                const gradeOptions = this.gradeLevels.map(g => `<option value="${g.id}" ${this.filters.grade == g.id ? 'selected' : ''}>${g.name}</option>`).join('');
+                
+                if (studentsData.length === 0 && (this.students.length > 0 || this.results.length > 0)) {
+                    return `
+                        <div class="stats">
+                            <div class="stat-box"><div class="stat-number">${this.students.length}</div><div class="stat-label">إجمالي الطلاب</div></div>
+                            <div class="stat-box"><div class="stat-number">${this.results.length}</div><div class="stat-label">إجمالي المواد</div></div>
+                        </div>
+                        <div class="filter-bar">
+                            <form class="filter-form" id="filterForm">
+                                <div class="form-group"><label>المرحلة</label><select name="grade"><option value="">الكل</option>${gradeOptions}</select></div>
+                                <div class="form-group"><label>الفصل</label><select name="semester"><option value="">الكل</option><option value="first" ${this.filters.semester === 'first' ? 'selected' : ''}>الأول</option><option value="second" ${this.filters.semester === 'second' ? 'selected' : ''}>الثاني</option></select></div>
+                                <div class="form-group"><label>السنة</label><select name="year"><option value="">الكل</option>${availableYears.map(y => `<option value="${y}" ${this.filters.year === y ? 'selected' : ''}>${y}</option>`).join('')}</select></div>
+                                <div class="form-group"><label>الحالة</label><select name="hideFilter"><option value="all" ${this.filters.hideFilter === 'all' ? 'selected' : ''}>الكل</option><option value="visible" ${this.filters.hideFilter === 'visible' ? 'selected' : ''}>الظاهرة</option><option value="hidden" ${this.filters.hideFilter === 'hidden' ? 'selected' : ''}>المخفية</option></select></div>
+                                <div class="form-group"><label>بحث</label><input type="text" name="search" value="${this.escapeHtml(this.filters.search)}" placeholder="اسم الطالب"></div>
+                                <div class="form-group"><button type="submit" class="btn btn-primary">🔍 بحث</button><button type="button" id="resetFilters" class="btn" style="background:#e2e8f0;">إعادة تعيين</button></div>
+                            </form>
+                        </div>
+                        <div class="card" style="padding:40px;text-align:center;">
+                            <div style="font-size:48px;">🔍</div>
+                            <div>لا توجد نتائج مطابقة لمعايير البحث</div>
+                            <div style="color:#718096;margin-top:10px;">يوجد ${this.students.length} طالب و ${this.results.length} مادة - اضغط "إعادة تعيين" لعرض الكل</div>
+                        </div>
+                    `;
+                }
+                
+                if (studentsData.length === 0) {
+                    return `<div class="card" style="padding:40px;text-align:center;"><div style="font-size:48px;">📭</div><div>لا توجد بيانات</div><div style="color:#718096;">تأكد من رفع ملفات النتائج أولاً</div></div>`;
+                }
+                
+                return `
+                    <div class="stats">
+                        <div class="stat-box"><div class="stat-number">${studentsData.length}</div><div class="stat-label">👨‍🎓 عدد الطلاب</div></div>
+                        <div class="stat-box"><div class="stat-number">${filtered.length}</div><div class="stat-label">📊 المواد المعروضة</div></div>
+                        <div class="stat-box"><div class="stat-number" style="color:#27ae60;">${filtered.filter(r => !r.is_hidden).length}</div><div class="stat-label">✅ ظاهرة</div></div>
+                        <div class="stat-box"><div class="stat-number" style="color:#e74c3c;">${filtered.filter(r => r.is_hidden).length}</div><div class="stat-label">🔒 محجوبة</div></div>
+                    </div>
+                    
+                    <div class="filter-bar">
+                        <form class="filter-form" id="filterForm">
+                            <div class="form-group"><label>المرحلة</label><select name="grade"><option value="">الكل</option>${gradeOptions}</select></div>
+                            <div class="form-group"><label>الفصل</label><select name="semester"><option value="">الكل</option><option value="first" ${this.filters.semester === 'first' ? 'selected' : ''}>الأول</option><option value="second" ${this.filters.semester === 'second' ? 'selected' : ''}>الثاني</option></select></div>
+                            <div class="form-group"><label>السنة</label><select name="year"><option value="">الكل</option>${availableYears.map(y => `<option value="${y}" ${this.filters.year === y ? 'selected' : ''}>${y}</option>`).join('')}</select></div>
+                            <div class="form-group"><label>الحالة</label><select name="hideFilter"><option value="all" ${this.filters.hideFilter === 'all' ? 'selected' : ''}>الكل</option><option value="visible" ${this.filters.hideFilter === 'visible' ? 'selected' : ''}>الظاهرة</option><option value="hidden" ${this.filters.hideFilter === 'hidden' ? 'selected' : ''}>المخفية</option></select></div>
+                            <div class="form-group"><label>بحث</label><input type="text" name="search" value="${this.escapeHtml(this.filters.search)}" placeholder="اسم الطالب"></div>
+                            <div class="form-group"><button type="submit" class="btn btn-primary">🔍 بحث</button><button type="button" id="resetFilters" class="btn" style="background:#e2e8f0;">إعادة تعيين</button></div>
+                        </form>
+                    </div>
+                    
+                    <div class="export-buttons">
+                        <button id="exportExcelBtn" class="btn btn-success">📎 تصدير إلى Excel</button>
+                        <button id="printAllBtn" class="btn btn-primary">🖨️ طباعة الكل</button>
+                    </div>
+                    
+                    <div class="bulk-actions">
+                        <button id="bulkShowBtn" class="btn btn-success btn-sm">✅ إظهار المحدد</button>
+                        <button id="bulkHideBtn" class="btn btn-danger btn-sm">🔒 إخفاء المحدد</button>
+                        <label><input type="checkbox" id="selectAll"> تحديد الكل</label>
+                    </div>
+                    
+                    <div id="studentsContainer">
+                        ${studentsData.map(student => {
+                            const gradeName = this.gradeLevels.find(g => g.id == student.grade_level_id)?.name || '-';
+                            const hiddenCount = student.results.filter(r => r.is_hidden).length;
+                            const emptyCount = student.results.filter(r => r.is_empty).length;
+                            
+                            return `
+                                <div class="student-card">
+                                    <div class="student-card-header" onclick="this.closest('.student-card').classList.toggle('expanded')">
+                                        <div class="student-info">
+                                            <div class="student-name">📚 ${this.escapeHtml(student.name)}</div>
+                                            <div class="student-detail">${gradeName}</div>
+                                            <div class="student-detail">📅 ${student.academic_year || '-'}</div>
+                                            ${student.seatNumber ? `<div class="student-detail">🪑 ${this.escapeHtml(student.seatNumber)}</div>` : ''}
+                                            ${hiddenCount > 0 ? `<div class="badge-hidden-count">🔒 ${hiddenCount}</div>` : ''}
+                                            ${emptyCount > 0 ? `<div class="badge-hidden-count" style="background:#f59e0b;">⚠️ ${emptyCount}</div>` : ''}
+                                        </div>
+                                        <span class="expand-icon">▼</span>
+                                    </div>
+                                    <div class="student-card-body">
+                                        <div style="overflow-x:auto;">
+                                            <table class="courses-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="checkbox-col"><input type="checkbox" class="group-checkbox" data-student="${student.id}"></th>
+                                                        <th>📖 المادة</th>
+                                                        <th>⭐ الدرجة</th>
+                                                        <th>🔐 الحالة</th>
+                                                        <th>📌 النوع</th>
+                                                        <th>⚙️ إجراءات</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    ${student.results.map(result => {
+                                                        const isEmpty = result.is_empty || result.subject_grade === "—";
+                                                        const badgeClass = result.is_hidden ? 'badge-hidden' : (isEmpty ? 'badge-empty' : (result.is_added_to_total ? 'badge-visible' : 'badge-empty'));
+                                                        const badgeText = result.is_hidden ? 'محجوبة' : (isEmpty ? 'فارغة' : (result.is_added_to_total ? 'مضافة' : 'غير مضافة'));
+                                                        
+                                                        return `
+                                                            <tr style="${!result.is_hidden && result.is_added_to_total ? 'background:#e6fffa;' : (result.is_hidden ? 'background:#fef2f2;' : '')}">
+                                                                <td class="checkbox-col"><input type="checkbox" class="result-checkbox" data-result-id="${result.id}"></td>
+                                                                <td>${this.escapeHtml(result.subject_name)}</td>
+                                                                <td><strong>${this.escapeHtml(isEmpty ? '—' : result.subject_grade)}</strong></td>
+                                                                <td><span class="${badgeClass}">${badgeText}</span></td>
+                                                                <td>${result.is_added_to_total ? '✅ مضاف' : '⚠️ غير مضاف'}</td>
+                                                                <td>
+                                                                    <button class="toggle-link" onclick="App.toggleResult(${result.id})">${result.is_hidden ? '👁️ إظهار' : '🔒 إخفاء'}</button>
+                                                                    <button class="toggle-link" onclick="App.deleteResult(${result.id})" style="background:#fee;color:#c53030;">🗑️ حذف</button>
+                                                                </td>
+                                                            </tr>
+                                                        `;
+                                                    }).join('')}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            },
+            
+            escapeHtml(text) {
+                if (!text) return '';
+                return String(text).replace(/[&<>]/g, function(m) {
+                    if (m === '&') return '&amp;';
+                    if (m === '<') return '&lt;';
+                    if (m === '>') return '&gt;';
+                    return m;
+                });
+            },
+            
+            render() {
+                const html = `
+                    <div class="container">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+                            <h1 style="color:white;">🏫 مدارس نيو فيجن الخاصة</h1>
+                            <div class="tabs">
+                                <button class="tab ${this.currentTab === 'dashboard' ? 'active' : ''}" onclick="App.switchTab('dashboard')">📊 لوحة التحكم</button>
+                                <button class="tab ${this.currentTab === 'results' ? 'active' : ''}" onclick="App.switchTab('results')">📖 عرض المواد</button>
+                                <a href="student.html" target="_blank" style="background:#27ae60;color:white;padding:10px 20px;border-radius:10px;text-decoration:none;">🔍 صفحة الطلاب</a>
+                                <button onclick="App.logout()" style="background:#e74c3c;color:white;padding:10px 20px;border:none;border-radius:10px;cursor:pointer;">🚪 خروج</button>
+                            </div>
+                        </div>
+                        ${this.currentTab === 'dashboard' ? this.renderDashboard() : this.renderResults()}
+                    </div>
+                `;
+                
+                document.getElementById('app').innerHTML = html;
+                this.bindEvents();
+            },
+            
+            switchTab(tab) {
+                this.currentTab = tab;
+                if (tab === 'results') {
+                    // إعادة تعيين الفلاتر عند التبديل إلى عرض النتائج
+                    this.filters = { grade: '', semester: '', year: '', hideFilter: 'all', search: '' };
+                }
+                this.render();
+            },
+            
+            logout() {
+                Auth.logout();
+            },
+            
+            bindEvents() {
+                // رفع الملف العادي
+                const uploadBtn = document.getElementById('uploadBtn');
+                if (uploadBtn) {
+                    uploadBtn.onclick = () => {
+                        const file = document.getElementById('excelFile').files[0];
+                        const grade = document.getElementById('gradeLevel').value;
+                        const semester = document.getElementById('semester').value;
+                        const year = document.getElementById('academicYear').value;
+                        if (!grade) { this.showMessage('اختر المرحلة', true); return; }
+                        this.uploadExcel(file, grade, semester, year);
+                    };
+                }
+                
+                // تصدير قائمة المواد
+                const exportSubjectsBtn = document.getElementById('exportSubjectsBtn');
+                if (exportSubjectsBtn) {
+                    exportSubjectsBtn.onclick = () => this.exportSubjectsList();
+                }
+                
+                // رفع ملف التحديث
+                const uploadUpdateBtn = document.getElementById('uploadUpdateBtn');
+                if (uploadUpdateBtn) {
+                    uploadUpdateBtn.onclick = () => {
+                        const file = document.getElementById('updateFile').files[0];
+                        this.uploadSubjectsUpdate(file);
+                    };
+                }
+                
+                // تصدير JSON
+                const exportJsonBtn = document.getElementById('exportJsonBtn');
+                if (exportJsonBtn) {
+                    exportJsonBtn.onclick = () => this.exportToJSON();
+                }
+                
+                // فلتر النتائج
+                const filterForm = document.getElementById('filterForm');
+                if (filterForm) {
+                    filterForm.onsubmit = (e) => {
+                        e.preventDefault();
+                        const fd = new FormData(e.target);
+                        this.filters = {
+                            grade: fd.get('grade') || '',
+                            semester: fd.get('semester') || '',
+                            year: fd.get('year') || '',
+                            hideFilter: fd.get('hideFilter') || 'all',
+                            search: fd.get('search') || ''
+                        };
+                        this.render();
+                    };
+                }
+                
+                const resetBtn = document.getElementById('resetFilters');
+                if (resetBtn) {
+                    resetBtn.onclick = () => {
+                        this.filters = { grade: '', semester: '', year: '', hideFilter: 'all', search: '' };
+                        this.render();
+                    };
+                }
+                
+                // الإجراءات الجماعية
+                const bulkShowBtn = document.getElementById('bulkShowBtn');
+                if (bulkShowBtn) bulkShowBtn.onclick = () => this.bulkActions('show');
+                
+                const bulkHideBtn = document.getElementById('bulkHideBtn');
+                if (bulkHideBtn) bulkHideBtn.onclick = () => this.bulkActions('hide');
+                
+                // تصدير Excel وطباعة
+                const exportExcelBtn = document.getElementById('exportExcelBtn');
+                if (exportExcelBtn) exportExcelBtn.onclick = () => this.exportToExcel();
+                
+                const printAllBtn = document.getElementById('printAllBtn');
+                if (printAllBtn) printAllBtn.onclick = () => this.printAllResults();
+                
+                // تحديد الكل
+                const selectAll = document.getElementById('selectAll');
+                if (selectAll) {
+                    selectAll.onchange = (e) => {
+                        document.querySelectorAll('.result-checkbox').forEach(cb => cb.checked = e.target.checked);
+                    };
+                }
+            }
+        };
+        
+        window.App = App;
+        App.init();
+    </script>
+</body>
+</html>
